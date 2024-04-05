@@ -1,0 +1,6 @@
+@ThucTapLTSedu_HostAddress = http://localhost:5293
+
+GET {{ThucTapLTSedu_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
