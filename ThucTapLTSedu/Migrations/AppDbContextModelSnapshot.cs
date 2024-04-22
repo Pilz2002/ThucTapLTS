@@ -67,7 +67,7 @@ namespace ThucTapLTSedu.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PromotionId")
+                    b.Property<int?>("PromotionId")
                         .HasColumnType("int");
 
                     b.Property<double>("TotalMoney")
@@ -77,19 +77,16 @@ namespace ThucTapLTSedu.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("UpdateTime")
+                    b.Property<DateTime>("UpdateTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BillStatusId");
 
-                    b.HasIndex("PromotionId");
+                    b.HasIndex("CustomerId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("PromotionId");
 
                     b.ToTable("Bills");
                 });
@@ -335,10 +332,11 @@ namespace ThucTapLTSedu.Migrations
                     b.Property<DateTime>("PremiereDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("RateId")
+                    b.Property<int>("RateId")
                         .HasColumnType("int");
 
                     b.Property<string>("Trailer")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -784,23 +782,21 @@ namespace ThucTapLTSedu.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ThucTapLTSedu.Entities.Promotion", "Promotion")
+                    b.HasOne("ThucTapLTSedu.Entities.User", "Customer")
                         .WithMany("Bills")
-                        .HasForeignKey("PromotionId")
+                        .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ThucTapLTSedu.Entities.User", "User")
+                    b.HasOne("ThucTapLTSedu.Entities.Promotion", "Promotion")
                         .WithMany("Bills")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PromotionId");
 
                     b.Navigation("BillStatus");
 
-                    b.Navigation("Promotion");
+                    b.Navigation("Customer");
 
-                    b.Navigation("User");
+                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("ThucTapLTSedu.Entities.BillFood", b =>
@@ -862,7 +858,9 @@ namespace ThucTapLTSedu.Migrations
 
                     b.HasOne("ThucTapLTSedu.Entities.Rate", "Rate")
                         .WithMany("Movies")
-                        .HasForeignKey("RateId");
+                        .HasForeignKey("RateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("MovieType");
 

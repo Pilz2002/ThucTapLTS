@@ -16,9 +16,9 @@ namespace ThucTapLTSedu.Entities
 		public int MovieTypeId { get; set; }
 		public MovieType MovieType { get; set; }
 		public string Name { get; set; }
-		public int?  RateId { get; set; }
-		public Rate? Rate { get; set; }
-		public string? Trailer { get; set; }
+		public int RateId { get; set; }
+		public Rate Rate { get; set; }
+		public string Trailer { get; set; }
 		public bool IsActive { get; set; }
 		public IEnumerable<Schedule> Schedules { get; set; }
 	}

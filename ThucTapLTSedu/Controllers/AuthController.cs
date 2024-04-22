@@ -19,13 +19,13 @@ namespace ThucTapLTSedu.Controllers
 		}
 
 		[HttpPost("/Account/Register")]
-		public IActionResult Register([FromForm] DataRequest_Register request)
+		public IActionResult Register([FromBody] DataRequest_Register request)
 		{
 			return Ok(_authServices.Register(request));
 		}
 
 		[HttpPost("/Account/Login")]
-		public IActionResult Login([FromForm] DataRequest_Login request)
+		public IActionResult Login([FromBody] DataRequest_Login request)
 		{
 			return Ok(_authServices.Login(request));
 		}

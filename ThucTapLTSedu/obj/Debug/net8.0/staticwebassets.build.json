@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "i6aB4bPMnke2vg2fk9CGAM0mOKcWjPter0LcF0y6FpE=",
+  "Hash": "+RAK6lLJd76crmCPdSCUxzYPxl1eND2FV7D+p5LZ+Xw=",
   "Source": "ThucTapLTSedu",
   "BasePath": "_content/ThucTapLTSedu",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "ThucTapLTSedu\\wwwroot",
+      "Source": "ThucTapLTSedu",
+      "ContentRoot": "D:\\ThucTapLTSedu\\ThucTapLTSedu\\wwwroot\\",
+      "BasePath": "_content/ThucTapLTSedu",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }

@@ -34,6 +34,7 @@ namespace ThucTapLTSedu.DataContext
 		public DbSet<Schedule> Schedules { get; set; }
 		public DbSet<Seat> Seats { get; set; }
 		public DbSet<SeatType> SeatTypes { get; set; }
+		public DbSet<SeatStatus> SeatStatus { get; set; }
 		public DbSet<Ticket> Tickets { get; set; }
 		public DbSet<User> Users { get; set; }
 		public DbSet<UserStatus> UserStatuses { get; set; }

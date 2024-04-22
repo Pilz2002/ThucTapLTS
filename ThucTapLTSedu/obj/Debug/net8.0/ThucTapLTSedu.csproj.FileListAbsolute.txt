@@ -139,3 +139,5 @@ D:\ThucTapLTSedu\ThucTapLTSedu\bin\Debug\net8.0\Scrutor.dll
 D:\ThucTapLTSedu\ThucTapLTSedu\bin\Debug\net8.0\Swashbuckle.AspNetCore.Filters.dll
 D:\ThucTapLTSedu\ThucTapLTSedu\bin\Debug\net8.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
 D:\ThucTapLTSedu\ThucTapLTSedu\bin\Debug\net8.0\BCrypt.Net-Next.dll
+D:\ThucTapLTSedu\ThucTapLTSedu\obj\Debug\net8.0\ThucTapLTSedu.sourcelink.json
+D:\ThucTapLTSedu\ThucTapLTSedu\bin\Debug\net8.0\ThucTapLTSedu.staticwebassets.runtime.json

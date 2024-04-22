@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ThucTapLTSedu.DataContext;
+using ThucTapLTSedu.Payloads.Converter.CinemaConverter;
 using ThucTapLTSedu.Payloads.Converter.UserConverter;
+using ThucTapLTSedu.Payloads.DataResponses.AdminResponses;
 using ThucTapLTSedu.Payloads.DataResponses.AuthResponses;
 using ThucTapLTSedu.Payloads.DataResponses.UserResponses;
 using ThucTapLTSedu.Payloads.Responses;
@@ -54,10 +57,33 @@ builder.Services.AddCors(options =>
 
 //Add scopped
 builder.Services.AddScoped<IAuthServices,AuthServices>();
+builder.Services.AddScoped<IAdminServices, AdminServices>();
+builder.Services.AddScoped<IUserServices, UserServices>();
+
+builder.Services.AddScoped<ResponseObject<List<DataResponse_Seat>>>();
+builder.Services.AddScoped<ResponseObject<List<DataResponse_Room>>>();
+builder.Services.AddScoped<ResponseObject<DataResponses_Cinema>>();
 builder.Services.AddScoped<ResponseObject<DataResponse_Token>>();
 builder.Services.AddScoped<ResponseObject<DataResponse_User>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_Food>>();
 builder.Services.AddScoped<ResponseObject<string>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_Room>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_Seat>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_Movie>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_Schedule>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_Bill>>();
+
+builder.Services.AddScoped<Food_Converter>();
 builder.Services.AddScoped<User_Converter>();
+builder.Services.AddScoped<Room_Converter>();
+builder.Services.AddScoped<Cinema_Converter>();
+builder.Services.AddScoped<Seat_Converter>();
+builder.Services.AddScoped<Movie_Converter>();
+builder.Services.AddScoped<Schedule_Converter>();
+builder.Services.AddScoped<Ticket_Converter>();
+builder.Services.AddScoped<BillFood_Converter>();
+builder.Services.AddScoped<BIll_Converter>();
+
 builder.Services.AddScoped<AppDbContext>();
 
 
