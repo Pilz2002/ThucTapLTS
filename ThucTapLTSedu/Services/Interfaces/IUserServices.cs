@@ -10,16 +10,22 @@ namespace ThucTapLTSedu.Services.Interfaces
 {
 	public interface IUserServices
 	{
+		
 		public PageResult<DataResponse_Movie> GetMovieByCinema(string cinemaCode, int pageSize, int pageNumber);
-		public PageResult<DataResponse_Seat> GetSeatByRoom(string cinemaCode, string roomCode,int pageSize, int pageNumber);
+		public PageResult<DataResponse_Seat> GetSeatByRoom(string cinemaCode, string roomCode, int pageSize, int pageNumber);
+		#region Luồng chọn phim theo lịch chiếu, rạp, phòng,...
 		public PageResult<DataResponse_Schedule> ChooseMovie(string movieName, int pageSize, int pageNumber);
 		public PageResult<DataResponses_Cinema> ChooseSchedule(string scheduleCode, int pageSize, int pageNumber);
 		public PageResult<DataResponse_Room> ChooseCinema(string cinemaCode, int pageSize, int pageNumber);
-		public PageResult<DataResponse_Seat> ChooseRoom(string cinemaCode ,string roomCode, string scheduleCode, int pageSize, int pageNumber);
-		public PageResult<DataResponse_Ticket> ChooseSeats(int userId, DataRequest_ChooseSeats request,int pageSize, int pageNumber);
-		public PageResult<DataResponse_BillFood> ChooseFood(int userId, List<DataRequest_ChooseFood> requests, int pageSize,int pageNumber);
+		public PageResult<DataResponse_Seat> ChooseRoom(string cinemaCode, string roomCode, string scheduleCode, int pageSize, int pageNumber);
+		public PageResult<DataResponse_Ticket> ChooseSeats(int userId, DataRequest_ChooseSeats request, int pageSize, int pageNumber);
+		public PageResult<DataResponse_BillFood> ChooseFood(int userId, List<DataRequest_ChooseFood> requests, int pageSize, int pageNumber);
+		#endregion
+
+		#region Tiến hành xác nhận bill và thanh toán qua vn pay
 		public ResponseObject<DataResponse_Bill> ConfirmBill(int userId);
 		public string PayForBill(HttpContext httpContext, int userId);
 		public DataResponse_Vnpay PaymentExecute(IQueryCollection collections);
+		#endregion
 	}
 }

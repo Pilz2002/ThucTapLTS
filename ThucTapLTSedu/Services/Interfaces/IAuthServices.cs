@@ -14,6 +14,7 @@ namespace ThucTapLTSedu.Services.Interfaces
 		public ResponseObject<DataResponse_User> VerifyEmail(DataRequest_VerifyEmail request,int userId);
 		public ResponseObject<string> ForgotPassword(DataRequest_ForgotPassword request);
 		public ResponseObject<string> ChangePassword(int userId, DataRequest_ChangePassword request);
+		//Lấy code để xác nhận email
 		public ResponseObject<string> GetCode(int userId);
 	}
 }

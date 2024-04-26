@@ -1,11 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Core;
+using Microsoft.EntityFrameworkCore;
+using System.Collections;
 using System.IO;
 using ThucTapLTSedu.DataContext;
 using ThucTapLTSedu.Entities;
 using ThucTapLTSedu.Handler.Paging;
 using ThucTapLTSedu.Payloads.Converter.CinemaConverter;
+using ThucTapLTSedu.Payloads.Converter.UserConverter;
 using ThucTapLTSedu.Payloads.DataRequests.AdminRequests;
 using ThucTapLTSedu.Payloads.DataResponses.AdminResponses;
+using ThucTapLTSedu.Payloads.DataResponses.UserResponses;
 using ThucTapLTSedu.Payloads.Responses;
 using ThucTapLTSedu.Services.Interfaces;
 using static System.Net.Mime.MediaTypeNames;
@@ -24,6 +28,12 @@ namespace ThucTapLTSedu.Services.Implements
 		private readonly ResponseObject<DataResponse_Food> _foodResponse;
 		private readonly ResponseObject<DataResponse_Movie> _movieResponse;
 		private readonly ResponseObject<DataResponse_Schedule> _scheduleResponse;
+		private readonly ResponseObject<DataResponse_SeatType> _seatTypeResponse;
+		private readonly ResponseObject<DataResponse_SeatStatus> _seatStatusResponse;
+		private readonly ResponseObject<DataResponse_RankCustomer> _rankCustomerResponse;
+		private readonly ResponseObject<DataResponse_User> _userResponse;
+		private readonly ResponseObject<DataResponse_Promotion> _promotionResponse;
+
 
 		private readonly Cinema_Converter _cinemaConverter;
 		private readonly Room_Converter _roomConverter;
@@ -31,6 +41,13 @@ namespace ThucTapLTSedu.Services.Implements
 		private readonly Food_Converter _foodConverter;
 		private readonly Movie_Converter _movieConverter;
 		private readonly Schedule_Converter _scheduleConverter;
+		private readonly SeatType_Converter _seatTypeConverter;
+		private readonly SeatStatus_Converter _seatStatusConverter;
+		private readonly RankCustomer_Converter _rankCustomerConverter;
+		private readonly CinemaSales_Converter _cinemaSalesConverter;
+		private readonly User_Converter _userConverter;
+		private readonly Promotion_Converter _promotionConverter;
+
 
 		public AdminServices(AppDbContext context, ResponseObject<DataResponses_Cinema> cinemaResponse,
 			Cinema_Converter cinemaConverter, ResponseObject<List<DataResponse_Room>> roomResponse,
@@ -38,7 +55,12 @@ namespace ThucTapLTSedu.Services.Implements
 			ResponseObject<List<DataResponse_Seat>> seatResponse, ResponseObject<DataResponse_Food> foodResponse,
 			Food_Converter foodConverter, ResponseObject<DataResponse_Room> singleRoomResponse,
 			ResponseObject<DataResponse_Seat> singleSeatResponse, ResponseObject<DataResponse_Movie> movieResponse,
-			Movie_Converter movieConverter, ResponseObject<DataResponse_Schedule> scheduleResponse, Schedule_Converter scheduleConverter)
+			Movie_Converter movieConverter, ResponseObject<DataResponse_Schedule> scheduleResponse, Schedule_Converter scheduleConverter,
+			ResponseObject<DataResponse_SeatType> seatTypeResponse, ResponseObject<DataResponse_SeatStatus> seatStatusResponse,
+			SeatType_Converter seatTypeConverter, SeatStatus_Converter seatStatusConverter,
+			ResponseObject<DataResponse_RankCustomer> rankCustomerResponse, RankCustomer_Converter rankCustomerConverter,
+			CinemaSales_Converter cinemaSalesConverter, ResponseObject<DataResponse_User> userResponse, User_Converter userConverter,
+			ResponseObject<DataResponse_Promotion> promotionResponse, Promotion_Converter promotionConverter)
 		{
 			_context = context;
 			_cinemaResponse = cinemaResponse;
@@ -49,6 +71,11 @@ namespace ThucTapLTSedu.Services.Implements
 			_singleSeatResponse = singleSeatResponse;
 			_movieResponse = movieResponse;
 			_scheduleResponse = scheduleResponse;
+			_seatTypeResponse = seatTypeResponse;
+			_seatStatusResponse = seatStatusResponse;
+			_rankCustomerResponse = rankCustomerResponse;
+			_userResponse = userResponse;
+			_promotionResponse = promotionResponse;
 
 			_seatConverter = seatConverter;
 			_roomConverter = roomConverter;
@@ -56,6 +83,12 @@ namespace ThucTapLTSedu.Services.Implements
 			_movieConverter = movieConverter;
 			_foodConverter = foodConverter;
 			_scheduleConverter = scheduleConverter;
+			_seatStatusConverter = seatStatusConverter;
+			_seatTypeConverter = seatTypeConverter;
+			_rankCustomerConverter = rankCustomerConverter;
+			_cinemaSalesConverter = cinemaSalesConverter;
+			_userConverter = userConverter;
+			_promotionConverter = promotionConverter;
 		}
 
 		public ResponseObject<DataResponses_Cinema> AddCinema(DataRequest_AddCinema cinemaRequest)
@@ -382,13 +415,13 @@ namespace ThucTapLTSedu.Services.Implements
 
 		public ResponseObject<DataResponse_Schedule> AddSchedule(DataRequest_AddSchedule request)
 		{
-			if(_context.Schedules.Any(x=>x.Code == request.Code))
+			if (_context.Schedules.Any(x => x.Code == request.Code))
 			{
-				return _scheduleResponse.ErrorResponse(StatusCodes.Status400BadRequest,"Code bị trùng lặp",null);
+				return _scheduleResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Code bị trùng lặp", null);
 			}
 			if (_context.Schedules.Any(x => x.StartAt <= request.StartAt && x.EndAt >= request.StartAt && x.RoomId == request.RoomId))
 			{
-				return _scheduleResponse.ErrorResponse(StatusCodes.Status400BadRequest,"Bị trùng lặp thời gian xuất chiếu",null);
+				return _scheduleResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Bị trùng lặp thời gian xuất chiếu", null);
 			}
 			if (_context.Schedules.Any(x => x.StartAt <= request.EndAt && x.EndAt >= request.EndAt && x.RoomId == request.RoomId))
 			{
@@ -398,7 +431,7 @@ namespace ThucTapLTSedu.Services.Implements
 			{
 				return _scheduleResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Bị trùng lặp thời gian xuất chiếu", null);
 			}
-			if (!_context.Movies.Any(x=>x.Id == request.MovieId))
+			if (!_context.Movies.Any(x => x.Id == request.MovieId))
 			{
 				return _scheduleResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Không tìm thấy phim", null);
 			}
@@ -425,7 +458,7 @@ namespace ThucTapLTSedu.Services.Implements
 		public ResponseObject<DataResponse_Schedule> UpdateSchedule(int scheduleId, DataRequest_UpdateSchedule request)
 		{
 			Schedule schedule = _context.Schedules.FirstOrDefault(x => x.Id == scheduleId);
-			if(schedule is null)
+			if (schedule is null)
 			{
 				return _scheduleResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Không tìm thấy schedule", null);
 			}
@@ -471,6 +504,266 @@ namespace ThucTapLTSedu.Services.Implements
 			_context.Schedules.Remove(schedule);
 			_context.SaveChanges();
 			return _scheduleResponse.SuccessResponse("Delete thành công", _scheduleConverter.ScheduleDTO(schedule));
+		}
+
+		public ResponseObject<DataResponse_SeatStatus> AddSeatStatus(DataRequest_AddSeatStatus request)
+		{
+			if (_context.SeatStatus.Any(x => x.Code == request.Code))
+			{
+				return _seatStatusResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Code đã tồn tại", null);
+			}
+			if (_context.SeatStatus.Any(x => x.NameStatus == request.NameStatus))
+			{
+				return _seatStatusResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Name status đã tồn tại", null);
+			}
+			SeatStatus seatStatus = new SeatStatus
+			{
+				Code = request.Code,
+				NameStatus = request.NameStatus
+			};
+			_context.SeatStatus.Add(seatStatus);
+			_context.SaveChanges();
+			return _seatStatusResponse.SuccessResponse("Thêm thành công", _seatStatusConverter.SeatStatusDTO(seatStatus));
+		}
+
+		public ResponseObject<DataResponse_SeatStatus> UpdateSeatStatus(DataRequest_UpdateSeatStatus request)
+		{
+			var seatStatus = _context.SeatStatus.FirstOrDefault(x => x.Id == request.SeatStatusId);
+			if (seatStatus is null)
+			{
+				return _seatStatusResponse.ErrorResponse(StatusCodes.Status404NotFound, "SeatStatus không tồn tại", null);
+			}
+			if (_context.SeatStatus.Any(x => x.Code == request.Code && x.Id != seatStatus.Id))
+			{
+				return _seatStatusResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Code đã tồn tại", null);
+			}
+			if (_context.SeatStatus.Any(x => x.NameStatus == request.NameStatus && x.Id != seatStatus.Id))
+			{
+				return _seatStatusResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Name status đã tồn tại", null);
+			}
+			seatStatus.Code = request.Code;
+			seatStatus.NameStatus = request.NameStatus;
+			_context.SeatStatus.Update(seatStatus);
+			_context.SaveChanges();
+			return _seatStatusResponse.SuccessResponse("Update thành công", _seatStatusConverter.SeatStatusDTO(seatStatus));
+		}
+
+		public ResponseObject<DataResponse_SeatStatus> DeleteSeatStatus(int id)
+		{
+			var seatStatus = _context.SeatStatus.FirstOrDefault(x => x.Id == id);
+			if (seatStatus is null)
+			{
+				return _seatStatusResponse.ErrorResponse(StatusCodes.Status404NotFound, "SeatStatus không tồn tại", null);
+			}
+			_context.SeatStatus.Remove(seatStatus);
+			_context.SaveChanges();
+			return _seatStatusResponse.SuccessResponse("Xóa thành công", _seatStatusConverter.SeatStatusDTO(seatStatus));
+		}
+
+		public ResponseObject<DataResponse_SeatType> AddSeatType(DataRequest_AddSeatType request)
+		{
+			if (_context.SeatTypes.Any(x => x.NameType == request.NameType))
+			{
+				return _seatTypeResponse.ErrorResponse(StatusCodes.Status400BadRequest, "NameType đã tồn tại", null);
+			}
+			SeatType seatType = new SeatType
+			{
+				NameType = request.NameType
+			};
+			_context.SeatTypes.Add(seatType);
+			_context.SaveChanges();
+			return _seatTypeResponse.SuccessResponse("Thêm thành công", _seatTypeConverter.SeatTypeDTO(seatType));
+
+		}
+
+		public ResponseObject<DataResponse_SeatType> UpdateSeatType(int id, string nameType)
+		{
+			var seatType = _context.SeatTypes.FirstOrDefault(x => x.Id == id);
+			if (seatType is null)
+			{
+				return _seatTypeResponse.ErrorResponse(StatusCodes.Status404NotFound, "SeatType không tồn tại", null);
+			}
+			if (_context.SeatTypes.Any(x => x.NameType == nameType && x.Id != seatType.Id))
+			{
+				return _seatTypeResponse.ErrorResponse(StatusCodes.Status400BadRequest, "NameType đã tồn tại", null);
+			}
+			seatType.NameType = nameType;
+			_context.SeatTypes.Update(seatType);
+			_context.SaveChanges();
+			return _seatTypeResponse.SuccessResponse("Update thành công", _seatTypeConverter.SeatTypeDTO(seatType));
+		}
+
+		public ResponseObject<DataResponse_SeatType> DeleteSeatType(int id)
+		{
+			var seatType = _context.SeatTypes.FirstOrDefault(x => x.Id == id);
+			if (seatType is null)
+			{
+				return _seatTypeResponse.ErrorResponse(StatusCodes.Status404NotFound, "SeatType không tồn tại", null);
+			}
+			_context.SeatTypes.Remove(seatType);
+			_context.SaveChanges();
+			return _seatTypeResponse.SuccessResponse("Xóa thành công", _seatTypeConverter.SeatTypeDTO(seatType));
+		}
+
+		public ResponseObject<DataResponse_RankCustomer> AddRankCustomer(DataRequest_AddRankCustomer request)
+		{
+			if (_context.RankCustomers.Any(x => x.Name == request.Name))
+			{
+				return _rankCustomerResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Name đã tồn tại", null);
+			}
+			RankCustomer rankCustomer = new RankCustomer
+			{
+				Description = request.Description,
+				IsActive = true,
+				Name = request.Name,
+				Point = request.Point
+			};
+			_context.RankCustomers.Add(rankCustomer);
+			_context.SaveChanges();
+			return _rankCustomerResponse.SuccessResponse("Thêm thành công", _rankCustomerConverter.RankCustomerDTO(rankCustomer));
+		}
+
+		public ResponseObject<DataResponse_RankCustomer> UpdateRankCustomer(DataRequest_UpdateRankCustomer request)
+		{
+			var rankCustomer = _context.RankCustomers.FirstOrDefault(x => x.Id == request.RankCustomerId);
+			if (rankCustomer is null)
+			{
+				_rankCustomerResponse.ErrorResponse(StatusCodes.Status404NotFound, "Dữ liệu không tồn tại", null);
+			}
+			if (_context.RankCustomers.Any(x => x.Name == request.Name && x.Id != rankCustomer.Id))
+			{
+
+				_rankCustomerResponse.ErrorResponse(StatusCodes.Status400BadRequest, "Name đã tồn tại", null);
+			}
+			rankCustomer.Description = request.Description;
+			rankCustomer.IsActive = request.IsActive;
+			rankCustomer.Name = request.Name;
+			rankCustomer.Point = request.Point;
+			_context.RankCustomers.Update(rankCustomer);
+			_context.SaveChanges();
+			return _rankCustomerResponse.SuccessResponse("Sửa thành công", _rankCustomerConverter.RankCustomerDTO(rankCustomer));
+		}
+
+		public ResponseObject<DataResponse_RankCustomer> DeleteRankCustomer(int id)
+		{
+			var rankCustomer = _context.RankCustomers.FirstOrDefault(x => x.Id == id);
+			if (rankCustomer is null)
+			{
+				_rankCustomerResponse.ErrorResponse(StatusCodes.Status404NotFound, "Dữ liệu không tồn tại", null);
+			}
+			_context.RankCustomers.Remove(rankCustomer);
+			_context.SaveChanges();
+			return _rankCustomerResponse.SuccessResponse("Xóa thành công", _rankCustomerConverter.RankCustomerDTO(rankCustomer));
+		}
+
+		public ResponseObject<DataResponse_Food> FoodBestSeller()
+		{
+			//Lấy danh sách bill food thuộc bill trong 7 ngày gần đây
+			var billFoods = _context.BillFoods.Where(x => x.Bill.CreateTime > DateTime.Now.AddDays(-7)).ToList();
+			if (billFoods is null)
+			{
+				throw new ArgumentNullException("Không có dữ liệu");
+			}
+			//Thống kê số lượng theo từng loại đồ ăn
+			Hashtable quantitiesOfFoods = new Hashtable();
+			foreach (var billFood in billFoods)
+			{
+				// nếu trong hash table chưa có đồ ăn này thì thêm vào
+				try
+				{
+					quantitiesOfFoods.Add(billFood.FoodId, billFood.Quantity);
+				}
+				// còn có rồi thì tăng số lượng lên
+				catch
+				{
+					quantitiesOfFoods[billFood.FoodId] = (int)quantitiesOfFoods[billFood.FoodId] + billFood.Quantity;
+				}
+			}
+			//Lấy ra đồ ăn có số lượng bán ra lớn nhất
+			int maxQuantity = -1;
+			int foodId = -1;
+			// lặp qua hash table để check xem foodId có số lượng mua nhiều nhất
+			foreach (DictionaryEntry item in quantitiesOfFoods)
+			{
+				if ((int)item.Value > maxQuantity)
+				{
+					maxQuantity = (int)item.Value;
+					foodId = (int)item.Key;
+				}
+			}
+			var food = _context.Foods.FirstOrDefault(x => x.Id == foodId);
+			return _foodResponse.SuccessResponse("Đồ ăn bán chạy nhất trong 7 ngày qua", _foodConverter.FoodDTO(food));
+		}
+
+		public PageResult<DataResponse_CinemaSales> GetCinemasSales(int pageSize, int pageNumber)
+		{
+			List<Cinema> cinemas = _context.Cinemas.ToList();
+			Hashtable hashTable = new Hashtable();
+			foreach (var item in cinemas)
+			{
+				// Thực hiện truy vấn sử dụng LINQ lấy total money theo từng rạp rồi lưu vào hash table
+				double totalMoney = (from cinema in _context.Cinemas
+								  join room in _context.Rooms on cinema.Id equals room.CinemaId
+								  join schedule in _context.Schedules on room.Id equals schedule.RoomId
+								  join ticket in _context.Tickets on schedule.Id equals ticket.ScheduleId
+								  join billTicket in _context.BillTickets on ticket.Id equals billTicket.TicketId
+								  join bill in _context.Bills on billTicket.BillId equals bill.Id
+								  where cinema.Id == item.Id
+								  group bill.TotalMoney by cinema.Id into g
+								  select g.Sum()).FirstOrDefault();
+				
+				hashTable.Add(item.Id, totalMoney);
+			}
+			// lặp qua hash table để convert sang DTO
+			List<DataResponse_CinemaSales> cinemaSalesDTO = new List<DataResponse_CinemaSales>();
+			foreach (DictionaryEntry item in hashTable)
+			{
+				cinemaSalesDTO.Add(_cinemaSalesConverter.CinemaSale((int)item.Key, (double)item.Value));
+			}
+			var ret = Pagination.GetPagedData(cinemaSalesDTO.AsQueryable(), pageSize, pageNumber);
+			return ret;
+		}
+
+		public ResponseObject<DataResponse_User> PromoteUserRole(string userName, string codeRole)
+		{
+			var user = _context.Users.FirstOrDefault(x => x.Username == userName);
+			if (user is null)
+			{
+				return _userResponse.ErrorResponse(StatusCodes.Status404NotFound, "Không thấy user", null);
+			}
+			var role = _context.Roles.FirstOrDefault(x => x.Code == codeRole);
+			if (role is null)
+			{
+				return _userResponse.ErrorResponse(StatusCodes.Status404NotFound, "Không thấy role", null);
+			}
+			user.RoleId = role.Id;
+			_context.Users.Update(user);
+			_context.SaveChanges();
+			return _userResponse.SuccessResponse("Sửa role thành công", _userConverter.UserDTO(user));
+		}
+
+		public ResponseObject<DataResponse_Promotion> AddPromotion(DataRequest_AddPromotion request)
+		{
+			var rankCustomer = _context.RankCustomers.FirstOrDefault(x => x.Id == request.RankCustomerId);
+			if(rankCustomer is null)
+			{
+				throw new ArgumentNullException("Không tìm thấy rankcustomer");
+			}
+			Promotion promotion = new Promotion
+			{
+				StartTime = request.StartTime,
+				EndTime = request.EndTime,
+				Name = request.Name,
+				Description = request.Description,
+				Percent = request.Percent,
+				Quantity = request.Quantity,
+				Type = request.Type,
+				IsActive = true,
+				RankCustomerId = request.RankCustomerId
+			};
+			_context.Promotions.Add(promotion);
+			_context.SaveChanges();
+			return _promotionResponse.SuccessResponse("Thêm thành công", _promotionConverter.PromotionDTO(promotion));
 		}
 	}
 }

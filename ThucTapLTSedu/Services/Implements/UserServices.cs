@@ -53,6 +53,7 @@ namespace ThucTapLTSedu.Services.Implements
 			_configuration = configuration;
 		}
 
+		// Hiển thị phim theo rạp
 		public PageResult<DataResponse_Movie> GetMovieByCinema(string cinemaCode, int pageSize, int pageNumber)
 		{
 			var query = _context.Cinemas
@@ -94,6 +95,7 @@ namespace ThucTapLTSedu.Services.Implements
 			return ret;
 		}
 
+		//Hiển thị ghế theo phòng của rạp
 		public PageResult<DataResponse_Seat> GetSeatByRoom(string cinemaCode, string roomCode, int pageSize, int pageNumber)
 		{
 			var query = _context.Cinemas.Include(x => x.Rooms).FirstOrDefault(x => x.Code == cinemaCode);
@@ -115,7 +117,7 @@ namespace ThucTapLTSedu.Services.Implements
 			var ret = Pagination.GetPagedData(seatDTO.AsQueryable(), pageSize, pageNumber);
 			return ret;
 		}
-
+		
 		private string GenerateRandomString()
 		{
 			Random random = new Random();
@@ -130,6 +132,9 @@ namespace ThucTapLTSedu.Services.Implements
 			return stringBuilder.ToString();
 		}
 
+
+		#region Bắt đầu luồng chọn vé để xem phim
+		// Hiển thị lịch chiếu theo phim
 		public PageResult<DataResponse_Schedule> ChooseMovie(string movieName, int pageSize, int pageNumber)
 		{
 			var movie = _context.Movies.FirstOrDefault(x => x.Name == movieName);
@@ -139,6 +144,7 @@ namespace ThucTapLTSedu.Services.Implements
 			return ret;
 		}
 
+		// Hiển thị rạp theo lịch chiếu phim
 		public PageResult<DataResponses_Cinema> ChooseSchedule(string scheduleCode, int pageSize, int pageNumber)
 		{
 			var schedule = _context.Schedules.FirstOrDefault(x => x.Code == scheduleCode);
@@ -154,6 +160,7 @@ namespace ThucTapLTSedu.Services.Implements
 			return ret;
 		}
 
+		// Hiển thị phòng theo rạp
 		public PageResult<DataResponse_Room> ChooseCinema(string cinemaCode, int pageSize, int pageNumber)
 		{
 			var cinema = _context.Cinemas.FirstOrDefault(x => x.Code == cinemaCode);
@@ -163,13 +170,15 @@ namespace ThucTapLTSedu.Services.Implements
 			return ret;
 		}
 
+		// Hiển thị ghế trong phòng
 		public PageResult<DataResponse_Seat> ChooseRoom(string cinemaCode, string roomCode, string scheduleCode, int pageSize, int pageNumber)
 		{
 			var room = _context.Rooms.FirstOrDefault(x => x.Code == roomCode && x.Cinema.Code == cinemaCode);
 			var schedule = _context.Schedules.FirstOrDefault(x => x.Code == scheduleCode);
 			var tickets = _context.Tickets.Where(x => x.ScheduleId == schedule.Id && x.IsActive == true).ToList();
 			var listSeats = _context.Seats.Where(x => x.RoomId == room.Id && x.IsActive == true).ToList();
-			//Hiển thị trạng thái ghế đã được đặt chưa theo lịch chiếu
+			//Hiển thị trạng thái ghế đã được đặt chưa theo lịch chiếu, default seatTypeId = 1 là khả dụng, check kiểm tra theo lịch chiếu
+			// nếu ghế đó đã được book thì đổi sang seatTypeId = 2 là đã được đặt trước
 			foreach (var seat in listSeats)
 			{
 				foreach (var ticket in tickets)
@@ -186,9 +195,10 @@ namespace ThucTapLTSedu.Services.Implements
 			return ret;
 		}
 
+		// chọn ghế
 		public PageResult<DataResponse_Ticket> ChooseSeats(int userId, DataRequest_ChooseSeats request, int pageSize,int pageNumber)
 		{
-			//GenerateBill
+			//Tạo bill
 			var user = _context.Users.FirstOrDefault(x => x.Id == userId);
 			var rankCustomer = _context.RankCustomers.FirstOrDefault(x => x.Id == user.RankCustomerId);
 			var promotion = _context.Promotions.FirstOrDefault(x => x.RankCustomerId == rankCustomer.Id
@@ -208,7 +218,7 @@ namespace ThucTapLTSedu.Services.Implements
 			_context.Bills.Add(newBill);
 			_context.SaveChanges();
 
-			//Generate Tikcet
+			//Tạo vé theo các ghế đã được chọn
 			var schedule = _context.Schedules.FirstOrDefault(x => x.Code == request.ScheduleCode);
 			List<Ticket> listTickets = new List<Ticket>();
 			foreach (var seatId in request.seatIds)
@@ -226,7 +236,7 @@ namespace ThucTapLTSedu.Services.Implements
 			_context.Tickets.AddRange(listTickets);
 			_context.SaveChanges();
 
-			//Generate Bill Ticket
+			//Tạo bill cho các ticket
 			var bill = _context.Bills.OrderByDescending(x => x.CreateTime).FirstOrDefault(x => x.CustomerId == userId && x.BillStatusId == 1 && x.IsActive == true);
 			List<BillTicket> lstBillTicket = new List<BillTicket>();
 			foreach (var ticket in listTickets)
@@ -246,6 +256,7 @@ namespace ThucTapLTSedu.Services.Implements
 			return ret;
 		}
 
+		// chọn đồ ăn
 		public PageResult<DataResponse_BillFood> ChooseFood(int userId, List<DataRequest_ChooseFood> requests, int pageSize,int pageNumber)
 		{
 			var bill = _context.Bills.OrderByDescending(x => x.CreateTime).FirstOrDefault(x => x.CustomerId == userId && x.BillStatusId == 1 && x.IsActive == true);
@@ -266,7 +277,9 @@ namespace ThucTapLTSedu.Services.Implements
 			var ret = Pagination.GetPagedData(billFoodDTO.AsQueryable(), pageSize, pageNumber);
 			return ret;
 		}
+		#endregion
 
+		// Xác nhận hóa đơn cho ticket và đồ ăn đã chọn
 		public ResponseObject<DataResponse_Bill> ConfirmBill(int userId)
 		{
 			var bill = _context.Bills.OrderByDescending(x=>x.CreateTime).FirstOrDefault(x => x.CustomerId == userId && x.BillStatusId == 1 && x.IsActive == true);
@@ -284,6 +297,7 @@ namespace ThucTapLTSedu.Services.Implements
 				var ticket = _context.Tickets.FirstOrDefault(x => x.Id == billTicket.TicketId);
 				totalMoney = totalMoney + (ticket.PriceTicket * (double)billTicket.Quantity);
 			}
+			// kiểm tra có khuyến mại hay không
 			if (promotion is not null)
 			{
 
@@ -299,7 +313,7 @@ namespace ThucTapLTSedu.Services.Implements
 			return _billResponse.SuccessResponse("Tạo bill thành công", _billConverter.BillDTO(bill));
 		}
 
-
+		// Tiến hành dùng bill vừa được confirm để gửi sang vnpay
 		public string PayForBill(HttpContext httpContext, int userId)
 		{
 			var user = _context.Users.FirstOrDefault(x => x.Id == userId);
@@ -313,7 +327,7 @@ namespace ThucTapLTSedu.Services.Implements
 			return ret;
 		}
 
-
+		// Tạo url cho việc thanh toán
 		private string CreatePaymentUrl(HttpContext context, OrderInfor order)
 		{
 			//Get Config Info
@@ -346,6 +360,7 @@ namespace ThucTapLTSedu.Services.Implements
 			return paymentUrl;
 		}
 
+		// Giả về sau khi thanh toán vn pay
 		public DataResponse_Vnpay PaymentExecute(IQueryCollection collections)
 		{
 			string vnp_HashSecret = _configuration.GetSection("AppSettings:vnp_HashSecret").Value!;//Chuoi bi mat
