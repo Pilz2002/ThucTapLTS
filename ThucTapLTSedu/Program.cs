@@ -72,6 +72,9 @@ builder.Services.AddScoped<ResponseObject<DataResponse_Seat>>();
 builder.Services.AddScoped<ResponseObject<DataResponse_Movie>>();
 builder.Services.AddScoped<ResponseObject<DataResponse_Schedule>>();
 builder.Services.AddScoped<ResponseObject<DataResponse_Bill>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_SeatStatus>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_SeatType>>();
+builder.Services.AddScoped<ResponseObject<DataResponse_RankCustomer>>();
 
 builder.Services.AddScoped<Food_Converter>();
 builder.Services.AddScoped<User_Converter>();
@@ -83,6 +86,12 @@ builder.Services.AddScoped<Schedule_Converter>();
 builder.Services.AddScoped<Ticket_Converter>();
 builder.Services.AddScoped<BillFood_Converter>();
 builder.Services.AddScoped<BIll_Converter>();
+builder.Services.AddScoped<SeatType_Converter>();
+builder.Services.AddScoped<SeatStatus_Converter>();
+builder.Services.AddScoped<RankCustomer_Converter>();
+builder.Services.AddScoped<CinemaSales_Converter>();
+
+
 
 builder.Services.AddScoped<AppDbContext>();
 
